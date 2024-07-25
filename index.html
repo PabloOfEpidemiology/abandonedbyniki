@@ -41,12 +41,6 @@
             font-size: 18px;
             font-weight: bold;
         }
-        #resetButton {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background-color: #f44336;
-        }
     </style>
 </head>
 <body>
@@ -56,11 +50,12 @@
         <button onclick="checkName()">Check</button>
         <div id="result"></div>
     </div>
-    <button id="resetButton" onclick="resetSearchCount()" style="display: none;">Reset Count</button>
 
     <script>
         let abandonedList = [];
         const MAX_SEARCHES = 5;
+        let rightArrowCount = 0;
+        let lastArrowTime = 0;
 
         function removeDiacritics(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -117,11 +112,7 @@
             const matchedPerson = abandonedList.find(person => {
                 const normalizedPerson = removeDiacritics(person[0].toLowerCase());
                 const personWords = normalizedPerson.split(/\s+/);
-                if (inputWords.length === 1) {
-                    return personWords.includes(input);
-                } else {
-                    return inputWords.some(word => personWords.includes(word));
-                }
+                return inputWords.some(word => personWords.includes(word));
             });
 
             if (matchedPerson) {
@@ -137,10 +128,22 @@
             }
         }
 
-        // Show reset button when pressing 'R' key
+        // Reset counter when right arrow is pressed 5 times in a row
         document.addEventListener('keydown', function(event) {
-            if (event.key.toLowerCase() === 'r') {
-                document.getElementById('resetButton').style.display = 'block';
+            const currentTime = new Date().getTime();
+            if (event.key === 'ArrowRight') {
+                if (currentTime - lastArrowTime < 1000) {
+                    rightArrowCount++;
+                    if (rightArrowCount === 5) {
+                        resetSearchCount();
+                        rightArrowCount = 0;
+                    }
+                } else {
+                    rightArrowCount = 1;
+                }
+                lastArrowTime = currentTime;
+            } else {
+                rightArrowCount = 0;
             }
         });
     </script>
