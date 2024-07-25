@@ -41,6 +41,12 @@
             font-size: 18px;
             font-weight: bold;
         }
+        #resetButton {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #f44336;
+        }
     </style>
 </head>
 <body>
@@ -50,10 +56,11 @@
         <button onclick="checkName()">Check</button>
         <div id="result"></div>
     </div>
+    <button id="resetButton" onclick="resetSearchCount()" style="display: none;">Reset Count</button>
 
     <script>
         let abandonedList = [];
-        const MAX_SEARCHES = 4;
+        const MAX_SEARCHES = 5;
 
         function removeDiacritics(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -84,13 +91,21 @@
             return count;
         }
 
+        function resetSearchCount() {
+            localStorage.setItem('searchCount', '0');
+            document.getElementById('nameInput').disabled = false;
+            document.querySelector('button').disabled = false;
+            document.getElementById('result').textContent = '';
+            console.log('Search count reset');
+        }
+
         function checkName() {
             const searchCount = incrementSearchCount();
             const result = document.getElementById('result');
 
             if (searchCount >= MAX_SEARCHES) {
                 result.textContent = "Your IP address has reached a search limit. Assume Nikita has abandoned everyone. No one has survived the cleanse. Not even himself. Evil Morty stuff. Probably he has already forgotten about you. Who even is Dylan Elyse etc these names don't ring a bell Should they?!?!?!?!";
-                result.style.color = 'red';
+                result.style.color = 'orange';
                 document.getElementById('nameInput').disabled = true;
                 document.querySelector('button').disabled = true;
                 return;
@@ -121,6 +136,13 @@
                 result.style.color = 'green';
             }
         }
+
+        // Show reset button when pressing 'R' key
+        document.addEventListener('keydown', function(event) {
+            if (event.key.toLowerCase() === 'r') {
+                document.getElementById('resetButton').style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>
