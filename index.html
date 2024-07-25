@@ -64,7 +64,9 @@
             try {
                 const response = await fetch('abandoned.csv');
                 const data = await response.text();
-                abandonedList = data.split('\n').map(name => name.trim()).filter(name => name);
+                abandonedList = data.split('\n')
+                    .map(line => line.split(',').map(item => item.trim()))
+                    .filter(line => line[0]); // Ensure the first column is not empty
                 console.log('Abandoned list loaded');
             } catch (error) {
                 console.error('Error loading abandoned list:', error);
@@ -79,8 +81,8 @@
             const inputWords = input.split(/\s+/);
             const result = document.getElementById('result');
 
-            const isAbandoned = abandonedList.some(person => {
-                const normalizedPerson = removeDiacritics(person.toLowerCase());
+            const matchedPerson = abandonedList.find(person => {
+                const normalizedPerson = removeDiacritics(person[0].toLowerCase());
                 const personWords = normalizedPerson.split(/\s+/);
                 if (inputWords.length === 1) {
                     // For single word input, check for exact match
@@ -91,8 +93,12 @@
                 }
             });
 
-            if (isAbandoned) {
-                result.textContent = "You're abandoned";
+            if (matchedPerson) {
+                if (matchedPerson[1]) {
+                    result.textContent = "You're abandoned for like 3 weeks";
+                } else {
+                    result.textContent = "You're abandoned";
+                }
                 result.style.color = 'red';
             } else {
                 result.textContent = "You are not abandoned";
