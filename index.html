@@ -53,42 +53,58 @@
 
     <script>
         let abandonedList = [];
+        const MAX_SEARCHES = 5;
 
-        // Function to remove diacritics
         function removeDiacritics(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
-        // Function to fetch and process the CSV
         async function fetchAbandonedList() {
             try {
                 const response = await fetch('abandoned.csv');
                 const data = await response.text();
                 abandonedList = data.split('\n')
                     .map(line => line.split(',').map(item => item.trim()))
-                    .filter(line => line[0]); // Ensure the first column is not empty
+                    .filter(line => line[0]);
                 console.log('Abandoned list loaded');
             } catch (error) {
                 console.error('Error loading abandoned list:', error);
             }
         }
 
-        // Load the list when the page loads
         fetchAbandonedList();
 
+        function getSearchCount() {
+            return parseInt(localStorage.getItem('searchCount') || '0');
+        }
+
+        function incrementSearchCount() {
+            const count = getSearchCount() + 1;
+            localStorage.setItem('searchCount', count.toString());
+            return count;
+        }
+
         function checkName() {
+            const searchCount = incrementSearchCount();
+            const result = document.getElementById('result');
+
+            if (searchCount >= MAX_SEARCHES) {
+                result.textContent = "Your IP address has reached a search limit. Assume Nikita has abandoned everyone. No one has survived the cleanse. Not even himself. Evil Morty stuff. Probably he has already forgotten about you. Who even is Dylan Elyse etc these names don't ring a bell Should they?!?!?!?!";
+                result.style.color = 'orange';
+                document.getElementById('nameInput').disabled = true;
+                document.querySelector('button').disabled = true;
+                return;
+            }
+
             const input = removeDiacritics(document.getElementById('nameInput').value.trim().toLowerCase());
             const inputWords = input.split(/\s+/);
-            const result = document.getElementById('result');
 
             const matchedPerson = abandonedList.find(person => {
                 const normalizedPerson = removeDiacritics(person[0].toLowerCase());
                 const personWords = normalizedPerson.split(/\s+/);
                 if (inputWords.length === 1) {
-                    // For single word input, check for exact match
                     return personWords.includes(input);
                 } else {
-                    // For multi-word input, check if at least one word matches
                     return inputWords.some(word => personWords.includes(word));
                 }
             });
