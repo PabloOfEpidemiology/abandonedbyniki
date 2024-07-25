@@ -12,11 +12,13 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-image: url('fuck.jpg');
+            background-repeat: repeat;
+            background-size: 50px;
         }
         .container {
             text-align: center;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -50,14 +52,46 @@
     </div>
 
     <script>
-        // List of abandoned people
-        const abandonedList = ['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Williams', 'Laura Šteinberga'];
+        let abandonedList = [];
+
+        // Function to remove diacritics
+        function removeDiacritics(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Function to fetch and process the CSV
+        async function fetchAbandonedList() {
+            try {
+                const response = await fetch('abandoned.csv');
+                const data = await response.text();
+                abandonedList = data.split('\n').map(name => name.trim()).filter(name => name);
+                console.log('Abandoned list loaded');
+            } catch (error) {
+                console.error('Error loading abandoned list:', error);
+            }
+        }
+
+        // Load the list when the page loads
+        fetchAbandonedList();
 
         function checkName() {
-            const name = document.getElementById('nameInput').value.trim().toLowerCase();
+            const input = removeDiacritics(document.getElementById('nameInput').value.trim().toLowerCase());
+            const inputWords = input.split(/\s+/);
             const result = document.getElementById('result');
 
-            if (abandonedList.some(person => person.toLowerCase().includes(name))) {
+            const isAbandoned = abandonedList.some(person => {
+                const normalizedPerson = removeDiacritics(person.toLowerCase());
+                const personWords = normalizedPerson.split(/\s+/);
+                if (inputWords.length === 1) {
+                    // For single word input, check for exact match
+                    return personWords.includes(input);
+                } else {
+                    // For multi-word input, check if at least one word matches
+                    return inputWords.some(word => personWords.includes(word));
+                }
+            });
+
+            if (isAbandoned) {
                 result.textContent = "You're abandoned";
                 result.style.color = 'red';
             } else {
