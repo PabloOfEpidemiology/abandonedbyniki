@@ -53,7 +53,6 @@
 
     <script>
         let abandonedList = [];
-        let threeWeeksList = [];
         const MAX_SEARCHES = 5;
         let rightArrowCount = 0;
         let lastArrowTime = 0;
@@ -66,9 +65,7 @@
             try {
                 const response = await fetch('abandoned.csv');
                 const data = await response.text();
-                const lines = data.split('\n').map(line => line.split(',').map(item => item.trim()));
-                abandonedList = lines.map(line => line[0]).filter(name => name);
-                threeWeeksList = lines.filter(line => line[1]).map(line => line[0]);
+                abandonedList = data.split('\n').map(line => line.trim()).filter(name => name);
                 console.log('Abandoned list loaded');
             } catch (error) {
                 console.error('Error loading abandoned list:', error);
@@ -101,7 +98,7 @@
 
             if (searchCount >= MAX_SEARCHES) {
                 result.textContent = "Your IP address has reached a search limit. Assume Nikita has abandoned everyone. No one has survived the cleanse. Not even himself. Evil Morty stuff. Probably he has already forgotten about you. Who even is Dylan Elyse etc these names don't ring a bell Should they?!?!?!?!";
-                result.style.color = 'red';
+                result.style.color = 'green';
                 document.getElementById('nameInput').disabled = true;
                 document.querySelector('button').disabled = true;
                 return;
@@ -116,16 +113,7 @@
                 return inputWords.some(word => personWords.includes(word));
             });
 
-            const isThreeWeeks = threeWeeksList.some(person => {
-                const normalizedPerson = removeDiacritics(person.toLowerCase());
-                const personWords = normalizedPerson.split(/\s+/);
-                return inputWords.some(word => personWords.includes(word));
-            });
-
-            if (isThreeWeeks) {
-                result.textContent = "You're abandoned for like 3 weeks";
-                result.style.color = 'red';
-            } else if (isAbandoned) {
+            if (isAbandoned) {
                 result.textContent = "You're abandoned";
                 result.style.color = 'red';
             } else {
